@@ -1,4 +1,4 @@
-#InfiChat-Web
+### **InfiChat-Web**
 
 INFIChat is a Python-based web application that provides a custom AI chatbot solution designed to streamline internal communication and enhance document-based responses. The chatbot leverages internal company documents and APIs to deliver relevant and accurate responses to employee queries.
 
