@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Announcement</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        input[type="file"] {
+            margin-bottom: 20px;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #0078D4;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #005A9E;
+        }
+        .preview {
+            margin: 20px 0;
+        }
+        .preview img, .preview video {
+            max-width: 100%;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Announcement</h1>
+
+    <form id="announcementForm">
+        <label for="announcementText">Announcement Text</label>
+        <textarea id="announcementText" name="announcementText" rows="5" placeholder="Write your announcement here..."></textarea>
+
+        <!-- <label for="announcementMedia">Upload Media (Image/Video)</label>
+        <input type="file" id="announcementMedia" name="announcementMedia" accept="image/*, video/*"> -->
+
+        <div class="preview" id="preview"></div>
+
+        <button type="submit">Send Announcement</button>
+    </form>
+</div>
+
+<script>
+    const form = document.getElementById('announcementForm');
+    const mediaInput = document.getElementById('announcementMedia');
+    const preview = document.getElementById('preview');
+
+    mediaInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const result = e.target.result;
+                preview.innerHTML = ''; 
+                if (file.type.startsWith('image/')) {
+                    const img = document.createElement('img');
+                    img.src = result;
+                    preview.appendChild(img);
+                } else if (file.type.startsWith('video/')) {
+                    const video = document.createElement('video');
+                    video.src = result;
+                    video.controls = true;
+                    preview.appendChild(video);
+                }
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+
+    form.addEventListener('submit', async function(event) {
+        event.preventDefault();
+
+        const formData = new FormData();
+        formData.append('announcementText', document.getElementById('announcementText').value);
+        const mediaFile = document.getElementById('announcementMedia').files[0];
+        if (mediaFile) {
+            formData.append('announcementMedia', mediaFile);
+        }
+
+        try {
+            const response = await fetch('http://188.166.70.139:8000/sendAnnouncement', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (response.ok) {
+                alert('Announcement sent successfully!');
+            } else {
+                alert('Error sending announcement.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred while sending the announcement.');
+        }
+    });
+</script>
+
+</body>
+</html>

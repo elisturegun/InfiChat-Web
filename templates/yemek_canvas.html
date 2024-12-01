@@ -1,0 +1,542 @@
+<!-- <!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Haftalık Öğle Yemeği Menüsü</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+
+        h1 {
+            font-family: "Montserrat", sans-serif;
+            text-align: center;
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 30px;
+        }
+
+        .menu-form {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 900px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            font-family: "Montserrat", sans-serif;
+            font-size: 18px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            text-align: center;
+            background-color: #f4f4f4;
+            font-weight: bold;
+        }
+
+        .menu-form textarea {
+            padding: 10px;
+            font-size: 16px;
+            width: 100%;
+            height: 80px;
+            line-height: 1.6;
+            font-family: 'Montserrat', sans-serif;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            resize: vertical;
+            background-color: #f9f9f9;
+        }
+
+        .submit-btn {
+            padding: 15px;
+            font-size: 18px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            text-align: center;
+            width: 200px;
+            margin: 20px auto;
+        }
+
+        .submit-btn:hover {
+            background-color: #45a049;
+        }
+
+        .download-btn {
+            display: none;
+            padding: 15px;
+            font-size: 18px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            text-align: center;
+            width: 200px;
+            margin: 20px auto;
+        }
+
+        .download-btn:hover {
+            background-color: #0b7dda;
+        }
+
+        #menuCanvas {
+            display: none;
+            margin-top: 20px;
+        }
+
+    </style>
+</head>
+<body>
+
+<h1>Haftalık Öğle Yemeği Menüsü Formu</h1>
+
+<div class="menu-form">
+    <table>
+        <thead>
+        <tr>
+            <th>Gün</th>
+            <th>Sıcak Menü</th>
+            <th>Salata-Tatlı</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>Pazartesi</td>
+            <td><textarea id="monday-hot" placeholder="Sıcak Menü"></textarea></td>
+            <td><textarea id="monday-salad" placeholder="Salata-Tatlı"></textarea></td>
+        </tr>
+        <tr>
+            <td>Salı</td>
+            <td><textarea id="tuesday-hot" placeholder="Sıcak Menü"></textarea></td>
+            <td><textarea id="tuesday-salad" placeholder="Salata-Tatlı"></textarea></td>
+        </tr>
+        <tr>
+            <td>Çarşamba</td>
+            <td><textarea id="wednesday-hot" placeholder="Sıcak Menü"></textarea></td>
+            <td><textarea id="wednesday-salad" placeholder="Salata-Tatlı"></textarea></td>
+        </tr>
+        <tr>
+            <td>Perşembe</td>
+            <td><textarea id="thursday-hot" placeholder="Sıcak Menü"></textarea></td>
+            <td><textarea id="thursday-salad" placeholder="Salata-Tatlı"></textarea></td>
+        </tr>
+        <tr>
+            <td>Cuma</td>
+            <td><textarea id="friday-hot" placeholder="Sıcak Menü"></textarea></td>
+            <td><textarea id="friday-salad" placeholder="Salata-Tatlı"></textarea></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <button class="submit-btn" onclick="drawMenu()">Menüyü Oluştur</button>
+</div>
+
+<canvas id="menuCanvas" width="2000" height="2000"></canvas>
+
+<button class="download-btn" id="downloadBtn">Menüyü İndir</button>
+
+<script>
+    function drawMenu() {
+        const canvas = document.getElementById('menuCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Set up the background image
+        const backgroundImage = new Image();
+        backgroundImage.src = "{{ url_for('static', filename='images/yemek_background.jpg') }}";  // Ensure this image path is correct
+        backgroundImage.onload = () => {
+            ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+
+            // Render the text on the canvas (menu for each day)
+            ctx.font = '40px Montserrat';
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'left';
+
+            function renderMenu(startXHot, startYHot, startXSalad, startYSalad, dayHotId, daySaladId) {
+                const hotMenu = document.getElementById(dayHotId).value.split('\n');
+                const saladMenu = document.getElementById(daySaladId).value.split('\n');
+                const lineHeight = 54;
+
+                hotMenu.forEach((line, index) => {
+                    ctx.fillText(line, startXHot, startYHot + index * lineHeight);
+                });
+
+                saladMenu.forEach((line, index) => {
+                    ctx.fillText(line, startXSalad, startYSalad + index * lineHeight);
+                });
+            }
+
+            renderMenu(320, 290, 1180, 290, 'monday-hot', 'monday-salad');
+            renderMenu(320, 570, 1180, 570, 'tuesday-hot', 'tuesday-salad');
+            renderMenu(320, 850, 1180, 850, 'wednesday-hot', 'wednesday-salad');
+            renderMenu(320, 1125, 1180, 1125, 'thursday-hot', 'thursday-salad');
+            renderMenu(320, 1410, 1180, 1410, 'friday-hot', 'friday-salad');
+
+            // Make the canvas and download button visible after rendering
+            canvas.style.display = 'block';
+            document.getElementById('downloadBtn').style.display = 'block';
+        };
+
+        backgroundImage.onerror = function() {
+            alert('Background image could not be loaded. Please check the image path.');
+        };
+    }
+
+    // Handle the download button click
+    document.getElementById('downloadBtn').addEventListener('click', function() {
+        const canvas = document.getElementById('menuCanvas');
+        const imageData = canvas.toDataURL('image/jpeg', 1.0);  // Get the image data as a JPEG
+
+        const formData = new FormData();
+
+        // Append image data
+        formData.append('image_data', imageData);
+
+        // Add both "Sıcak Menü" and "Salata-Tatlı" for each day to the form data
+        formData.append('monday_menu', document.getElementById('monday-hot').value + '\nSalata-Tatlı:\n' + document.getElementById('monday-salad').value);
+        formData.append('tuesday_menu', document.getElementById('tuesday-hot').value + '\nSalata-Tatlı:\n' + document.getElementById('tuesday-salad').value);
+        formData.append('wednesday_menu', document.getElementById('wednesday-hot').value + '\nSalata-Tatlı:\n' + document.getElementById('wednesday-salad').value);
+        formData.append('thursday_menu', document.getElementById('thursday-hot').value + '\nSalata-Tatlı:\n' + document.getElementById('thursday-salad').value);
+        formData.append('friday_menu', document.getElementById('friday-hot').value + '\nSalata-Tatlı:\n' + document.getElementById('friday-salad').value);
+
+        // Use fetch API to send a POST request and handle the download response
+        fetch('/download_menu', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.ok) {
+                response.blob().then(blob => {
+                    const link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = 'haftalik_yemek_menusu.jpg';  // Set the download filename
+                    link.click();  // Trigger the download
+                });
+            } else {
+                console.error('Failed to download the image');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+</script>
+
+</body>
+</html> -->
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Haftalık Öğle Yemeği Menüsü</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+
+        h1 {
+            font-family: "Montserrat", sans-serif;
+            text-align: center;
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 30px;
+        }
+
+        .menu-form {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 900px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            font-family: "Montserrat", sans-serif;
+            font-size: 18px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            text-align: center;
+            background-color: #f4f4f4;
+            font-weight: bold;
+        }
+
+        .menu-form textarea {
+            padding: 10px;
+            font-size: 16px;
+            width: 100%;
+            height: 80px;
+            line-height: 1.6;
+            font-family: 'Montserrat', sans-serif;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            resize: none;
+            background-color: #f9f9f9;
+            height: 120px; /* Approximate height for 5 lines */
+            overflow-y: auto; /* Enable scrolling if content exceeds the height */
+        }
+
+        .submit-btn {
+            padding: 15px;
+            font-size: 18px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            text-align: center;
+            width: 200px;
+            margin: 20px auto;
+        }
+
+        .submit-btn:hover {
+            background-color: #45a049;
+        }
+
+        .download-btn {
+            display: none;
+            padding: 15px;
+            font-size: 18px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            text-align: center;
+            width: 200px;
+            margin: 20px auto;
+        }
+
+        .download-btn:hover {
+            background-color: #0b7dda;
+        }
+
+        #menuCanvas {
+            display: none;
+            margin-top: 20px;
+        }
+
+    </style>
+</head>
+<body>
+
+<h1>Haftalık Öğle Yemeği Menüsü Formu</h1>
+
+<div class="menu-form">
+    <table>
+        <thead>
+        <tr>
+            <th>Gün</th>
+            <th>Sıcak Menü</th>
+            <th>Salata-Tatlı</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>Pazartesi</td>
+            <td><textarea id="monday-hot" placeholder="Sıcak Menü"></textarea></td>
+            <td><textarea id="monday-salad" placeholder="Salata-Tatlı"></textarea></td>
+        </tr>
+        <tr>
+            <td>Salı</td>
+            <td><textarea id="tuesday-hot" placeholder="Sıcak Menü"></textarea></td>
+            <td><textarea id="tuesday-salad" placeholder="Salata-Tatlı"></textarea></td>
+        </tr>
+        <tr>
+            <td>Çarşamba</td>
+            <td><textarea id="wednesday-hot" placeholder="Sıcak Menü"></textarea></td>
+            <td><textarea id="wednesday-salad" placeholder="Salata-Tatlı"></textarea></td>
+        </tr>
+        <tr>
+            <td>Perşembe</td>
+            <td><textarea id="thursday-hot" placeholder="Sıcak Menü"></textarea></td>
+            <td><textarea id="thursday-salad" placeholder="Salata-Tatlı"></textarea></td>
+        </tr>
+        <tr>
+            <td>Cuma</td>
+            <td><textarea id="friday-hot" placeholder="Sıcak Menü"></textarea></td>
+            <td><textarea id="friday-salad" placeholder="Salata-Tatlı"></textarea></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <button class="submit-btn" onclick="drawMenu()">Menüyü Oluştur</button>
+</div>
+
+<canvas id="menuCanvas" width="2000" height="2000"></canvas>
+
+<button class="download-btn" id="downloadBtn">Menüyü İndir</button>
+
+<script>
+    document.querySelectorAll('.menu-form textarea').forEach(function(textarea) {
+        textarea.addEventListener('input', function() {
+            const maxLines = 5;
+            const lines = textarea.value.split('\n');
+
+            if (lines.length > maxLines) {
+                textarea.value = lines.slice(0, maxLines).join('\n'); // Limit the lines
+            }
+        });
+    });
+</script>
+<script>
+     window.onload = function() {
+        fetch('/get_last_menu')
+        .then(response => response.json())
+        .then(data => {
+            console.log('Fetched menu data:', data);  // Debugging output
+
+            // Check if data is correctly populated
+            if (data) {
+                // Log each field being assigned
+                console.log('Monday Hot:', data.pazartesi_hot);
+                console.log('Monday Salad:', data.pazartesi_salad);
+
+                document.getElementById('monday-hot').value = data.pazartesi_hot || '';
+                document.getElementById('monday-salad').value = data.pazartesi_salad || '';
+                document.getElementById('tuesday-hot').value = data.salı_hot || '';
+                document.getElementById('tuesday-salad').value = data.salı_salad || '';
+                document.getElementById('wednesday-hot').value = data.çarşamba_hot || '';
+                document.getElementById('wednesday-salad').value = data.çarşamba_salad || '';
+                document.getElementById('thursday-hot').value = data.perşembe_hot || '';
+                document.getElementById('thursday-salad').value = data.perşembe_salad || '';
+                document.getElementById('friday-hot').value = data.cuma_hot || '';
+                document.getElementById('friday-salad').value = data.cuma_salad || '';
+
+                // Trigger the canvas menu rendering
+                drawMenu();
+            } else {
+                console.error("Menu data is empty or missing");
+            }
+        })
+        .catch(error => console.error('Error loading menu:', error));
+    };
+
+    function drawMenu() {
+        const canvas = document.getElementById('menuCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Set up the background image
+        const backgroundImage = new Image();
+        backgroundImage.src = "{{ url_for('static', filename='images/yemek_background.jpg') }}";  // Ensure this image path is correct
+        backgroundImage.onload = () => {
+            ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+
+            // Render the text on the canvas (menu for each day)
+            ctx.font = '40px Montserrat';
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'left';
+
+            function renderMenu(startXHot, startYHot, startXSalad, startYSalad, dayHotId, daySaladId) {
+                const hotMenu = document.getElementById(dayHotId).value.split('\n');
+                const saladMenu = document.getElementById(daySaladId).value.split('\n');
+                const lineHeight = 54;
+
+                hotMenu.forEach((line, index) => {
+                    ctx.fillText(line, startXHot, startYHot + index * lineHeight);
+                });
+
+                saladMenu.forEach((line, index) => {
+                    ctx.fillText(line, startXSalad, startYSalad + index * lineHeight);
+                });
+            }
+
+            renderMenu(320, 290, 1180, 290, 'monday-hot', 'monday-salad');
+            renderMenu(320, 570, 1180, 570, 'tuesday-hot', 'tuesday-salad');
+            renderMenu(320, 850, 1180, 850, 'wednesday-hot', 'wednesday-salad');
+            renderMenu(320, 1125, 1180, 1125, 'thursday-hot', 'thursday-salad');
+            renderMenu(320, 1410, 1180, 1410, 'friday-hot', 'friday-salad');
+
+            // Make the canvas and download button visible after rendering
+            canvas.style.display = 'block';
+            document.getElementById('downloadBtn').style.display = 'block';
+        };
+
+        backgroundImage.onerror = function() {
+            alert('Background image could not be loaded. Please check the image path.');
+        };
+    }
+
+    // Handle the download button click
+    document.getElementById('downloadBtn').addEventListener('click', function() {
+        const canvas = document.getElementById('menuCanvas');
+        const imageData = canvas.toDataURL('image/jpeg', 1.0);  // Get the image data as a JPEG
+
+        const formData = new FormData();
+
+        // Append image data
+        formData.append('image_data', imageData);
+
+        // Add both "Sıcak Menü" and "Salata-Tatlı" for each day to the form data
+        formData.append('monday_menu', document.getElementById('monday-hot').value + '\nSalata-Tatlı:\n' + document.getElementById('monday-salad').value);
+        formData.append('tuesday_menu', document.getElementById('tuesday-hot').value + '\nSalata-Tatlı:\n' + document.getElementById('tuesday-salad').value);
+        formData.append('wednesday_menu', document.getElementById('wednesday-hot').value + '\nSalata-Tatlı:\n' + document.getElementById('wednesday-salad').value);
+        formData.append('thursday_menu', document.getElementById('thursday-hot').value + '\nSalata-Tatlı:\n' + document.getElementById('thursday-salad').value);
+        formData.append('friday_menu', document.getElementById('friday-hot').value + '\nSalata-Tatlı:\n' + document.getElementById('friday-salad').value);
+
+        // Use fetch API to send a POST request and handle the download response
+        fetch('/download_menu', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.ok) {
+                response.blob().then(blob => {
+                    const link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = 'haftalik_yemek_menusu.jpg';  // Set the download filename
+                    link.click();  // Trigger the download
+                });
+            } else {
+                console.error('Failed to download the image');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+</script>
+
+</body>
+</html>

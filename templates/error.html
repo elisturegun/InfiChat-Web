@@ -1,0 +1,56 @@
+<!-- error.html -->
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hata! Bir Şeyler Yanlış Gitti</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+        }
+        .error-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .error-container h1 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            color: #e74c3c;
+        }
+        .error-container p {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #666;
+        }
+        .error-container a {
+            text-decoration: none;
+            color: #3498db;
+            font-weight: bold;
+        }
+        .error-container a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <h1>Hata! Bir Şeyler Yanlış Gitti</h1>
+        <p>Üzgünüz, ama sunucumuzda bir hata meydana geldi.</p>
+        <p>Lütfen sayfayı yenilemeyi deneyin veya daha sonra tekrar ziyaret edin.</p>
+        <p>Eğer sorun devam ederse, <a href="mailto:elis.turegun@infinia.com.tr?subject=Destek Talebi&body=Merhaba,">destek ekibimizle</a> iletişime geçebilirsiniz.</p>
+        <p><a href="{{ url_for('index') }}">Anasayfaya Dön</a></p>
+    </div>
+</body>
+</html>

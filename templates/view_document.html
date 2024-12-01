@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Belge Görüntüle</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container mt-5">
+        <header class="text-center mb-5">
+            <h1>Belge Görüntüle</h1>
+        </header>
+        <section class="mb-5">
+            <div class="card">
+                <div class="card-header">
+                    <h3>{{ document[1] }}</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="content">Belge İçeriği:</label>
+                        <textarea class="form-control" id="content" rows="20" readonly>{{ document[2] }}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="ip_address">Yükleyen IP Adresi:</label>
+                        <input type="text" class="form-control" id="ip_address" value="{{ document[3] }}" readonly>
+                    </div>
+                    <a href="{{ url_for('index') }}" class="btn btn-primary">Geri Dön</a>
+                    {% if document[1].startswith("http") %}
+                    <a href="{{ document[1] }}" class="btn btn-secondary ml-2" target="_blank">İlgili Web Sayfasına Git</a>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

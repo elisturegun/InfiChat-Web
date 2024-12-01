@@ -1,0 +1,196 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chatbot</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container mt-5">
+        <header class="text-center mb-5">
+            <h1>AI Chatbot</h1>
+        </header>
+        <section class="mb-5">
+            <h2>Soru Sor</h2>
+            <form id="ask-form" class="mb-4">
+                <div class="form-group">
+                    <label for="question">Sorunuz:</label>
+                    <input type="text" class="form-control" id="question" name="question" placeholder="Sorunuzu buraya yazın..." required>
+                </div>
+                <button type="submit" class="btn btn-primary">Sor</button>
+            </form>
+            <div id="response-container" class="card" style="display:none;">
+                <div class="card-header">
+                    <h3>Cevap:</h3>
+                </div>
+                <div class="card-body">
+                    <div id="response-content"></div>
+                </div>
+            </div>
+        </section>
+        <section class="mb-5">
+            <h2>Belgeler</h2>
+            <ul class="list-group">
+                {% for document in documents %}
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>
+                                {% if "http://" in document[1] or "https://" in document[1] %}
+                                <a href="{{ document[1] }}" target="_blank">{{ document[1] }}</a>
+                                {% else %}
+                                {{ document[1] }}
+                                {% endif %}
+                            </strong>
+                        </div>
+                        <div>
+                            <a href="{{ url_for('view_document', document_id=document[0]) }}" class="btn btn-info">Görüntüle</a>
+                            <form action="/delete_document/{{ document[0] }}" method="POST" class="d-inline ml-2">
+                                <button type="submit" class="btn btn-danger">Sil</button>
+                            </form>
+                        </div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </section>
+        <section class="mb-5">
+            <h2>Belge Ekle</h2>
+            <form id="upload-form" action="/upload" method="POST" enctype="multipart/form-data" class="mb-4">
+                <div class="form-group">
+                    <label for="file">Dosya Seç:</label>
+                    <input type="file" class="form-control-file" id="file" name="file" accept=".pdf, .docx, .txt">
+                </div>
+                <div class="form-group">
+                    <label for="url">Website URL:</label>
+                    <input type="url" class="form-control" id="url" name="url" placeholder="Website URL'yi buraya yazın...">
+                </div>
+                <button type="submit" class="btn btn-primary">Yükle</button>
+            </form>
+            <div id="edit-section" style="display:none;">
+                <form action="/add_document" method="POST">
+                    <div class="form-group">
+                        <label for="content">Belge İçeriğini Düzenle:</label>
+                        <textarea class="form-control" id="content" name="content" rows="10"></textarea>
+                    </div>
+                    <input type="hidden" name="filename" id="filename">
+                    <div class="form-group">
+                        <label for="upload-password">Parola:</label>
+                        <input type="password" class="form-control" id="upload-password" name="upload_password" placeholder="Parolanızı buraya girin..." required>
+                    </div>
+                    <button type="submit" class="btn btn-success">Belgeyi Gönder</button>
+                </form>
+            </div>
+        </section>
+    </div>
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- JavaScript to handle form submission and streaming response -->
+    <script>
+        document.getElementById('ask-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const question = document.getElementById('question').value;
+            const responseContainer = document.getElementById('response-container');
+            const responseContent = document.getElementById('response-content');
+            
+            responseContent.innerHTML = '';
+            responseContainer.style.display = 'block';
+
+            // Open a new EventSource
+            const evtSource = new EventSource('/ask?' + new URLSearchParams({question: question}).toString());
+            let str = "";
+            
+            evtSource.onmessage = function(event) {
+                responseContent.innerHTML += event.data;
+                str += event.data;
+            };
+            
+            evtSource.onerror = function() {
+                evtSource.close();
+                // Convert response to Markdown format
+                fetch('/convert_to_markdown', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ text: str })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const md = data.markdown;
+                    const converter = new showdown.Converter();
+                    responseContent.innerHTML = formatText(converter.makeHtml(md));
+                })
+                .catch(error => console.error('Error converting to markdown:', error));
+            };
+        });
+
+        // Function to format the text by adding spaces after periods, exclamation marks, and question marks
+        function formatText(text) {
+            text = text.replace(/###\s*(.*)/g, "<br><strong>$1</strong>"); // Convert ### to bold
+            return text.replace(/([.?!])\s*(?=[A-Z])/g, "$1 ");
+        }
+
+        // Handle form submission for file and URL upload
+        document.getElementById('upload-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('content').value = data.content;
+                    document.getElementById('filename').value = data.filename;
+                    document.getElementById('edit-section').style.display = 'block';
+                    updateDocumentList(); // Update the document list
+                } else {
+                    alert('Dosya veya URL yükleme hatası: ' + data.error);
+                }
+            })
+            .catch(error => console.error('Error uploading file or URL:', error));
+        });
+
+        // Function to update the document list
+        function updateDocumentList() {
+            fetch('/api/documents')
+                .then(response => response.json())
+                .then(documents => {
+                    const documentList = document.querySelector('.list-group');
+                    documentList.innerHTML = ''; // Clear current list
+                    documents.forEach(document => {
+                        const listItem = document.createElement('li');
+                        listItem.className = 'list-group-item';
+                        listItem.innerHTML = `
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>${document[1]}</strong>
+                                </div>
+                                <div>
+                                    <a href="/view_document/${document[0]}" class="btn btn-info">Görüntüle</a>
+                                    <form action="/delete_document/${document[0]}" method="POST" class="d-inline ml-2">
+                                        <button type="submit" class="btn btn-danger">Sil</button>
+                                    </form>
+                                </div>
+                            </div>`;
+                        documentList.appendChild(listItem);
+                    });
+                })
+                .catch(error => console.error('Error fetching documents:', error));
+        }
+    </script>
+    <!-- Include Showdown JS -->
+    <script src="https://cdn.jsdelivr.net/npm/showdown@1.9.1/dist/showdown.min.js"></script>
+</body>
+</html>
